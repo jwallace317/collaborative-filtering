@@ -35,13 +35,31 @@ class RestrictedBoltzmannMachine():
             feature (np.array): feature vector, elements in {-1, 1}
 
         Returns:
-            prediction (np.array): the predicted target vector
+            prediction (np.array): the predicted target vector, elements in {-1, 1}
         """
 
         hidden = sample(sigmoid(np.dot(self.weights.T, feature)))
         prediction = sample(sigmoid(np.dot(self.weights, hidden)))
 
         return prediction
+
+    def predict_batch(self, features):
+        """
+        Predict
+
+        This method will predict a target matrix given a features matrix.
+
+        Args:
+            features (np.array): features matrix, elements in {-1, 1}
+
+        Returns:
+            predictions (np.array): the predicted target matrix, elements in {-1, 1}
+        """
+
+        hidden = sample(sigmoid(np.dot(self.weights.T, features.T)))
+        predictions = sample(sigmoid(np.dot(self.weights, hidden)))
+
+        return predictions.T
 
     def train(self, features, learning_rate=0.1, max_num_epochs=10):
         """
@@ -56,22 +74,13 @@ class RestrictedBoltzmannMachine():
             learning_rate (float): the learning rate of the weight update rule
         """
 
-        H0 = np.zeros((4, 120))
-        V1 = np.zeros((10, 120))
-        H1 = np.zeros((4, 120))
-
         for epoch in range(max_num_epochs):
-            features = shuffle(features)
+            H0 = sample(sigmoid(np.dot(self.weights.T, features.T)))
+            V1 = sample(sigmoid(np.dot(self.weights, H0)))
+            H1 = sample(sigmoid(np.dot(self.weights.T, V1)))
 
-            for i, feature in enumerate(features):
-                hidden0 = sample(sigmoid(np.dot(self.weights.T, feature)))
-                visible1 = sample(sigmoid(np.dot(self.weights, hidden0)))
-                hidden1 = sample(sigmoid(np.dot(self.weights.T, visible1)))
+            self.weights += learning_rate * (np.dot(features.T, H0.T) - np.dot(V1, H1.T))
 
-                H0[:, i] = hidden0
-                V1[:, i] = visible1
-                H1[:, i] = hidden1
-
-            for row in range(self.weights.shape[0]):
-                for col in range(self.weights.shape[1]):
-                    self.weights[row, col] = self.weights[row, col] + learning_rate * (np.mean(np.multiply(features[:, row], H0[col, :])) - np.mean(np.multiply(V1[row, :], H1[col, :])))
+            # for row in range(self.weights.shape[0]):
+            #     for col in range(self.weights.shape[1]):
+            #         self.weights[row, col] = self.weights[row, col] + learning_rate * (np.mean(np.multiply(features[:, row], H0[col, :])) - np.mean(np.multiply(V1[row, :], H1[col, :])))
