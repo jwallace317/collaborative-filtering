@@ -4,7 +4,6 @@ Task Main Module
 
 # import necessary modules
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
 from rbm import RestrictedBoltzmannMachine
@@ -22,18 +21,24 @@ def main():
     # convert pandas data frame to numpy matrix
     ice_cream = ice_cream_df.to_numpy()
 
+    # get user input for restricted boltzmann machine initialization parameters
+    print('Initialize Restricted Boltzmann Machine')
+    num_hidden_units = int(input('number of hidden nodes in Restricted Boltzmann Machine: '))
+    converge_constant = int(input('convergence constant for search and converge learning (enter 0 if constant learning is desired): '))
+
+    # train the restricted boltzmann machine with varying learning rates
     learning_rates = [0.001, 0.01, 0.1]
-    num_epochs = range(100)
-    for i, learning_rate in enumerate(learning_rates):
+    num_epochs = range(150)
+    for learning_rate in learning_rates:
 
         abs_mean_errors = []
         for epochs in num_epochs:
 
             # initialize restricted boltzmann machine
-            rbm = RestrictedBoltzmannMachine(num_visible_units=10, num_hidden_units=4)
+            rbm = RestrictedBoltzmannMachine(num_visible_units=10, num_hidden_units=num_hidden_units)
 
             # train the restricted boltzmann machine
-            rbm.train(ice_cream, learning_rate=learning_rate, max_num_epochs=epochs)
+            rbm.train(ice_cream, learning_rate=learning_rate, max_num_epochs=epochs, converge_constant=converge_constant)
 
             # calculate the predictions
             predictions = rbm.predict_batch(ice_cream)
@@ -50,6 +55,7 @@ def main():
         plt.xlabel('number of epochs')
         plt.ylabel('absolute mean error')
         plt.legend()
+        plt.text(75, 3.75, f'number of hidden units = { num_hidden_units }')
         plt.show()
 
 

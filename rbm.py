@@ -20,6 +20,7 @@ class RestrictedBoltzmannMachine():
     """
 
     def __init__(self, num_visible_units=1, num_hidden_units=1):
+
         # random seed
         np.random.seed(1)
 
@@ -88,7 +89,7 @@ class RestrictedBoltzmannMachine():
 
         return abs_mean_error
 
-    def train(self, features, learning_rate=0.1, max_num_epochs=10):
+    def train(self, features, learning_rate=0.1, max_num_epochs=10, converge_constant=0):
         """
         Train
 
@@ -99,6 +100,7 @@ class RestrictedBoltzmannMachine():
             features (np.array): features matrix, elements in {-1, 1}
             learning_rate (float): the learning rate of the weight update rule
             max_num_epochs (int): max number of epochs to train
+            converge_constant (int): constant to be used with search then converge learning
         """
 
         for epoch in range(max_num_epochs):
@@ -113,4 +115,7 @@ class RestrictedBoltzmannMachine():
             H1 = sample(sigmoid(np.dot(self.weights.T, V1)))
 
             # update the weights
-            self.weights += learning_rate * (np.dot(features.T, H0.T) - np.dot(V1, H1.T))
+            if converge_constant:
+                self.weights += (learning_rate / (1 + (epoch / converge_constant))) * (np.dot(features.T, H0.T) - np.dot(V1, H1.T))
+            else:
+                self.weights += learning_rate * (np.dot(features.T, H0.T) - np.dot(V1, H1.T))
