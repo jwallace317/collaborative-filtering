@@ -10,8 +10,7 @@ def sample(feature):
     """
     Sample
 
-    This method will return the sampled target vector given the feature and the
-    uniform distribution.
+    This method will return the sampled target vector given the feature vector.
 
     Args:
         feature (np.array): feature vector, elements in (0, 1)
